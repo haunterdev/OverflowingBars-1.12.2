@@ -1,6 +1,7 @@
 package com.xy.overflowingbars.client.handler;
 
 import com.xy.overflowingbars.client.helper.ChatOffsetHelper;
+import com.xy.overflowingbars.compat.ScalingHealthCompat;
 import com.xy.overflowingbars.config.OverflowingBarsConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
@@ -28,7 +29,8 @@ public class GuiOverlayHandler {
         ScaledResolution res = event.getResolution();
         RenderGameOverlayEvent.ElementType type = event.getType();
 
-        if (type == RenderGameOverlayEvent.ElementType.HEALTH && OverflowingBarsConfig.health.allowLayers) {
+        if (type == RenderGameOverlayEvent.ElementType.HEALTH && OverflowingBarsConfig.health.allowLayers
+                && !ScalingHealthCompat.shouldDeferHealthBar()) {
             event.setCanceled(true);
             GlStateManager.enableBlend();
             BarOverlayRenderer.renderHealthLevelBars(res.getScaledWidth(), res.getScaledHeight(), mc,
