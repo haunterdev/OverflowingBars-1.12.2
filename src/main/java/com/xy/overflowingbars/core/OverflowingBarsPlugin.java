@@ -1,17 +1,25 @@
 package com.xy.overflowingbars.core;
 
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
-import org.spongepowered.asm.mixin.Mixins;
+import zone.rong.mixinbooter.IEarlyMixinLoader;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 @IFMLLoadingPlugin.MCVersion("1.12.2")
-public class OverflowingBarsPlugin implements IFMLLoadingPlugin {
+public class OverflowingBarsPlugin implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
-    public OverflowingBarsPlugin() {
-        // MixinBootstrap.init() NOT called here — MixinBooter coremod already initializes Mixin.
-        // Calling it a second time causes LinkageError on GlobalProperties$Keys.
-        Mixins.addConfiguration("mixins.overflowingbars.json");
+    // Do NOT call MixinBootstrap.init() / Mixins.addConfiguration() here.
+    // MixinBooter owns Mixin (loaded in the LaunchClassLoader); touching it from
+    // this coremod constructor either runs too early ("you didn't call
+    // MixinBootstrap.init()") or causes a loader-constraint LinkageError on
+    // GlobalProperties$Keys. Instead implement IEarlyMixinLoader and let
+    // MixinBooter queue the config with its own Mixin instance at the right time.
+
+    @Override
+    public List<String> getMixinConfigs() {
+        return Collections.singletonList("mixins.overflowingbars.json");
     }
 
     @Override
