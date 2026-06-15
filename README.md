@@ -8,20 +8,20 @@ Requires 1.12.2, Forge 14.23.5.2860+, and [MixinBooter](https://www.curseforge.c
 
 ## Features
 
-- **Health & absorption** — stack beyond ten hearts in place, with an optional "Nx" row count.
-- **Armor** — the same compact stacking for high armor values.
-- **Armor toughness** — adds a dedicated toughness bar (diamond/netherite), which vanilla never shows.
-- **Mount health** — stacks a ridden mob's hearts (horse, donkey, pig, etc.) into one compact row with overflow coloring and an optional "Nx" row count, instead of vanilla's up-to-30-heart wrap.
-- **Chat offset** — keeps chat messages clear of the taller bars.
-- **Configurable** — row count color/style, per-bar layers, toughness side, and more in `config/overflowingbars.cfg`.
+- **Health & absorption**: stack beyond ten hearts in place, with an optional "Nx" row count.
+- **Armor**: the same compact stacking for high armor values.
+- **Armor toughness**: a dedicated toughness bar (diamond/netherite) that vanilla never shows.
+- **Mount health**: a ridden mob's hearts (horse, donkey, pig, and any living mount including modded dragons) stack into one compact row with overflow coloring and an optional "Nx" row count, instead of vanilla's up-to-30-heart wrap.
+- **Chat offset**: keeps chat messages clear of the taller bars.
+- **Configurable**: row count color/style, per-bar layers, toughness side, and more in `config/overflowingbars.cfg`.
 
 ## Mod compatibility
 
-- **Scaling Health** — handled automatically. Defaults to letting Scaling Health draw the hearts; disable its `Custom Heart Rendering` to use these stacked hearts instead.
-- **AttributeFix** — works alongside it. Needed if you want armor/toughness to actually exceed the vanilla caps.
-- **Simple Difficulty / thirst HUDs** — the toughness bar sits above the hunger bar. Set `leftSide=true` in the `toughness` config to move it, or `armorToughnessBar=false` to hide it.
-- **Quantum Things / Random Things** — the lava charm bar renders correctly alongside the armor bar.
+- **Scaling Health**: handled automatically. Defaults to letting Scaling Health draw the hearts; disable its `Custom Heart Rendering` to use these stacked hearts instead.
+- **AttributeFix**: works alongside it. Needed if you want armor/toughness to actually exceed the vanilla caps.
+- **Simple Difficulty / thirst HUDs**: the toughness bar sits above the hunger bar. Set `leftSide=true` in the `toughness` config to move it, or `armorToughnessBar=false` to hide it.
+- **Quantum Things / Random Things**: the lava charm bar renders correctly alongside the armor bar.
 
 ## License
 
-Code is [MPL-2.0](LICENSE.md), matching the original. Textures remain © Fuzs — see [LICENSE-ASSETS.md](LICENSE-ASSETS.md).
+Code is [MPL-2.0](LICENSE.md), matching the original. Textures remain © Fuzs, see [LICENSE-ASSETS.md](LICENSE-ASSETS.md).
