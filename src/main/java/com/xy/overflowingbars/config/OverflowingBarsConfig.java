@@ -18,6 +18,7 @@ public class OverflowingBarsConfig {
     public static final IconRowConfig health = new IconRowConfig();
     public static final ArmorRowConfig armor = new ArmorRowConfig();
     public static final ToughnessRowConfig toughness = new ToughnessRowConfig();
+    public static final IconRowConfig mount = new IconRowConfig();
     public static final RowCountConfig rowCount = new RowCountConfig();
 
     public static boolean moveChatAboveArmor = true;
@@ -27,6 +28,7 @@ public class OverflowingBarsConfig {
     public static int debugArmorPoints = 0;
     public static int debugToughnessPoints = 0;
     public static int debugHealthPoints = 0;
+    public static int debugMountHealthPoints = 0;
 
     private static Configuration config;
 
@@ -99,6 +101,14 @@ public class OverflowingBarsConfig {
         toughness.leftSide = config.getBoolean("leftSide", "toughness", false,
                 "Render the toughness bar on the left side above the hotbar (where health and armor is rendered).");
 
+        // mount (health of a living mount the player is riding: horse, donkey, pig, etc.)
+        mount.allowLayers = config.getBoolean("allowLayers", "mount", true,
+                "Add layers to the mount health bar. When disabled the bar renders exactly like vanilla.");
+        mount.allowCount = config.getBoolean("allowCount", "mount", true,
+                "Render row count to indicate total amount of rows since not all may be visible at once due to the stacked rendering.");
+        mount.colorizeFirstRow = config.getBoolean("colorizeFirstRow", "mount", false,
+                "Show colorful icons on the front row, not just on all subsequent rows.");
+
         // rowCount
         String colorName = config.getString("rowCountColor", "rowCount", "WHITE",
                 "Color of row count, use any chat formatting color value.",
@@ -124,6 +134,8 @@ public class OverflowingBarsConfig {
                 "TEST: force armor toughness point count (0 = off). Set e.g. 45 to preview toughness overflow rows.");
         debugHealthPoints = config.getInt("debugHealthPoints", "debug", 0, 0, 400,
                 "TEST: force health point count (0 = off). Set e.g. 50 to preview health overflow coloring + row count without healing.");
+        debugMountHealthPoints = config.getInt("debugMountHealthPoints", "debug", 0, 0, 400,
+                "TEST: force mount health point count (0 = off). Must be riding a living mount to see it. Set e.g. 50 to preview mount overflow coloring + row count.");
 
         if (config.hasChanged()) {
             config.save();

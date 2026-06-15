@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.client.GuiIngameForge;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
@@ -41,6 +42,7 @@ public class GuiOverlayHandler {
             mc.getTextureManager().bindTexture(BarOverlayRenderer.GUI_ICONS_LOCATION);
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
             GuiIngameForge.left_height += ChatOffsetHelper.twoHealthRows(mc.player) ? 20 : 10;
+            firePostOverlay(event, RenderGameOverlayEvent.ElementType.HEALTH);
         } else if (type == RenderGameOverlayEvent.ElementType.ARMOR && OverflowingBarsConfig.armor.allowLayers) {
             event.setCanceled(true);
             GlStateManager.enableBlend();
@@ -52,7 +54,35 @@ public class GuiOverlayHandler {
             if (ChatOffsetHelper.armorRow(mc.player)) {
                 GuiIngameForge.left_height += 10;
             }
+            firePostOverlay(event, RenderGameOverlayEvent.ElementType.ARMOR);
+        } else if (type == RenderGameOverlayEvent.ElementType.HEALTHMOUNT && OverflowingBarsConfig.mount.allowLayers) {
+            // HEALTHMOUNT only fires when the player is riding a living mount, so a
+            // mount is guaranteed here. Render one compact row and reserve its height.
+            event.setCanceled(true);
+            GlStateManager.enableBlend();
+            MountBarRenderer.renderMountHealth(res.getScaledWidth(), res.getScaledHeight(), mc,
+                    GuiIngameForge.right_height, OverflowingBarsConfig.mount.allowCount);
+            GlStateManager.disableBlend();
+            // Air bubbles reuse the texture bound here without rebinding; restore vanilla icons.
+            mc.getTextureManager().bindTexture(BarOverlayRenderer.GUI_ICONS_LOCATION);
+            GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+            GuiIngameForge.right_height += 10;
+            firePostOverlay(event, RenderGameOverlayEvent.ElementType.HEALTHMOUNT);
         }
+    }
+
+    /**
+     * Re-fire the matching {@code Post} overlay event after we cancel its {@code Pre}.
+     *
+     * Forge's {@code GuiIngameForge} renders each element as
+     * {@code if (pre(TYPE)) return; ...; post(TYPE);} — so cancelling the Pre also
+     * suppresses the Post. Other mods that draw on the Post of HEALTH/ARMOR/HEALTHMOUNT
+     * (e.g. Quantum Things' lava charm "Flamer Bar" on ARMOR) would silently vanish.
+     * Posting it ourselves, after we've drawn our bar and advanced the height counter,
+     * restores the vanilla event contract so those overlays keep rendering and stacking.
+     */
+    private static void firePostOverlay(RenderGameOverlayEvent.Pre pre, RenderGameOverlayEvent.ElementType type) {
+        MinecraftForge.EVENT_BUS.post(new RenderGameOverlayEvent.Post(pre, type));
     }
 
     @SubscribeEvent
