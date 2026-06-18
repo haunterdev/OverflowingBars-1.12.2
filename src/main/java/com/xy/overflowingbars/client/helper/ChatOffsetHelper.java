@@ -22,7 +22,16 @@ public class ChatOffsetHelper {
     }
 
     public static boolean twoHealthRows(EntityPlayer p) {
-        return p.getAbsorptionAmount() > 0.0F && p.getMaxHealth() + p.getAbsorptionAmount() > 20.0F;
+        if (p.getAbsorptionAmount() <= 0.0F) return false;
+        // Decide the reserved height the same way HealthBarRenderer.renderHearts lays out hearts:
+        // by rounded heart counts, NOT by raw (maxHealth + absorption). Rounding each bar up
+        // independently means the rendered hearts can wrap to a second row while the raw sum is
+        // still <= 20, so a raw "> 20" test under-reserves height and the armor bar overlaps the
+        // absorption row (notably with reduced max health + near-full absorption).
+        float maxHealth = Math.max(p.getMaxHealth(), MathHelper.ceil(p.getHealth()));
+        int normalHearts = Math.min(10, MathHelper.ceil((double) maxHealth / 2.0));
+        int absorptionHearts = Math.min(20 - normalHearts, MathHelper.ceil((double) p.getAbsorptionAmount() / 2.0));
+        return normalHearts + absorptionHearts > 10;
     }
 
     public static boolean armorRow(EntityPlayer p) {
