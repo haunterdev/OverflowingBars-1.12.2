@@ -3,7 +3,7 @@
 build/
 out/
 
-# RetroFuturaGradle run + caches
+# RFG
 run/
 *.log
 
