@@ -50,7 +50,7 @@ public class MountBarRenderer {
         // Row of the overflow color: hearts whose value falls in the current (top) row.
         int lastRow = (health - 1) % 20 + 1;
 
-        // Pass 1 — vanilla sheet: containers + red front-row hearts.
+        // Pass 1, vanilla sheet: containers + red front-row hearts.
         mc.getTextureManager().bindTexture(BarOverlayRenderer.GUI_ICONS_LOCATION);
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         for (int i = 0; i < normalHearts; ++i) {
@@ -73,7 +73,7 @@ public class MountBarRenderer {
             }
         }
 
-        // Pass 2 — mod sheet: gold overflow hearts on top.
+        // Pass 2, mod sheet: gold overflow hearts on top.
         mc.getTextureManager().bindTexture(BarOverlayRenderer.OVERFLOWING_ICONS_LOCATION);
         for (int i = 0; i < normalHearts; ++i) {
             if (i * 2 >= filled) continue;

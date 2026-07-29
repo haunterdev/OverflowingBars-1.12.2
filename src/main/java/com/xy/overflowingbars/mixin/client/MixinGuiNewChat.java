@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * Shifts the chat box (and its click mapping) upward so it clears the taller
  * stacked health/armor/absorption bars rendered by this mod. Mirrors the
  * original mod's ChatComponentMixin behaviour, adapted to the 1.12.2 GuiNewChat
- * (which has no {@code screenToChatY} — we wrap {@code drawChat} for the visual
+ * (which has no {@code screenToChatY}, we wrap {@code drawChat} for the visual
  * shift and adjust {@code getChatComponent}'s mouse Y for click accuracy).
  */
 @Mixin(GuiNewChat.class)
