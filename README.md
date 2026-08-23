@@ -24,4 +24,4 @@ Requires 1.12.2, Forge 14.23.5.2860+, and [MixinBooter](https://www.curseforge.c
 
 ## License
 
-Code is [MPL-2.0](LICENSE.md), matching the original. Textures remain © Fuzs, see [LICENSE-ASSETS.md](LICENSE-ASSETS.md).
+Code is [MPL-2.0](LICENSE.md), matching the original. Textures remain © Fuzs, see [LICENSE-ASSETS.md](src/main/resources/assets/overflowingbars/LICENSE-ASSETS.md).
