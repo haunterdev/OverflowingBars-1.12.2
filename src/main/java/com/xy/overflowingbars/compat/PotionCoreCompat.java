@@ -5,78 +5,109 @@ import net.minecraft.entity.ai.attributes.IAttribute;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.fml.common.Loader;
 
+import java.lang.reflect.Field;
+
 /**
- * Soft Potion Core attribute reader. Resolves PotionCoreAttributes fields
- * reflectively so OverflowingBars never hard-depends on potioncore.jar.
+ * Soft compat with Potion Core (1.12.2).
  *
- * Cache note: the resolved IAttribute instances are singletons, they are
- * the same object the entire JVM lifetime and never require re-resolution.
+ * Potion Core's {@code PotionCoreEventHandlerClient} draws extra things on the
+ * vanilla armor bar: a damage-resistance outline, a magic-shielding glint, armor
+ * values over 20, and armor toughness. We already render armor, toughness, and the
+ * over-20 overflow ourselves, and we cancel the vanilla {@code ARMOR} element to do
+ * it. That leaves Potion Core drawing its overlays at vanilla coordinates keyed off
+ * {@code GuiIngameForge.left_height}, which no longer matches our compacted layout,
+ * so its overflow/toughness icons double up and its resistance/magic-shield overlays
+ * land in the wrong spot.
+ *
+ * Potion Core exposes a single global toggle for all of this
+ * ({@code ConfigLoader.renderArmorOverlay}) and no per-feature switch, so the clean
+ * fix is to take ownership: disable Potion Core's armor overlay once at runtime, then
+ * render only the two things we don't already draw (damage resistance and magic
+ * shielding) aligned to our own armor bar (see {@code PotionCoreArmorRenderer}).
  */
 public final class PotionCoreCompat {
 
     private static final String MOD_ID = "potioncore";
+    private static final String ATTRIBUTES_CLASS = "com.tmtravlr.potioncore.PotionCoreAttributes";
+    private static final String CONFIG_CLASS = "com.tmtravlr.potioncore.ConfigLoader";
 
     private static boolean resolved;
-    private static boolean potionCoreLoaded;
-    /** DAMAGE_RESISTANCE, or null if not resolvable. */
+    private static boolean loaded;
+    /** Null when Potion Core is absent or the fields could not be found. */
     private static IAttribute damageResistance;
-    /** MAGIC_SHIELDING, or null if not resolvable. */
     private static IAttribute magicShielding;
+    private static Field renderArmorOverlay;
+    /** Latches once we have switched Potion Core's own armor overlay off. */
+    private static boolean overlayDisabled;
 
     private PotionCoreCompat() {}
 
-    /** True when potioncore is loaded AND both attributes are accessible. */
-    public static boolean isLoaded() {
-        if (!resolved) resolve();
-        return potionCoreLoaded;
+    /** True when Potion Core is installed and its attributes resolved. */
+    public static boolean isActive() {
+        if (!resolved) {
+            resolve();
+        }
+        return loaded && damageResistance != null && magicShielding != null;
     }
 
     /**
-     * Damage Resistance points (0–20 scale).
-     * {@code (attrValue - 1.0) * 20.0}, matching PotionCore's own formula
-     * in {@code renderOverlaysPre}.
-     *
-     * @return 0.0 when PC is absent, the attribute is missing, or the player
-     *         has no resistance.
+     * Damage-resistance display points (0-20), matching Potion Core's own formula:
+     * {@code (DAMAGE_RESISTANCE - 1.0) * 20}. Zero when inactive.
      */
     public static double getResistancePoints(EntityPlayer player) {
-        if (!isLoaded() || player == null || damageResistance == null) return 0.0;
-        double val = player.getEntityAttribute(damageResistance).getAttributeValue();
-        return (val - 1.0) * 20.0;
+        if (!isActive() || player == null) return 0.0;
+        return (player.getEntityAttribute(damageResistance).getAttributeValue() - 1.0) * 20.0;
     }
 
-    /**
-     * Magic Shielding value (0–20 range per PotionCore RangedAttribute).
-     *
-     * @return 0.0 when PC is absent, the attribute is missing, or the player
-     *         has no shielding.
-     */
+    /** Raw magic-shielding attribute value (0-20). Zero when inactive. */
     public static double getMagicShielding(EntityPlayer player) {
-        if (!isLoaded() || player == null || magicShielding == null) return 0.0;
+        if (!isActive() || player == null) return 0.0;
         return player.getEntityAttribute(magicShielding).getAttributeValue();
     }
 
-    // -----------------------------------------------------------------
-    // Reflection resolution (mirrors ScalingHealthCompat pattern)
-    // -----------------------------------------------------------------
+    /** True when this player has any resistance or magic-shield value worth drawing. */
+    public static boolean hasArmorOverlay(EntityPlayer player) {
+        return getResistancePoints(player) > 0.0 || getMagicShielding(player) > 0.0;
+    }
+
+    /**
+     * Switch Potion Core's own armor overlay off so it stops double-drawing over our
+     * compacted bar. Idempotent and lazy: called on first render, by which point Potion
+     * Core has long since loaded its config. No-op when Potion Core is absent.
+     */
+    public static void disablePotionCoreArmorOverlay() {
+        if (overlayDisabled || !isActive() || renderArmorOverlay == null) return;
+        overlayDisabled = true;
+        try {
+            renderArmorOverlay.setBoolean(null, false);
+            OverflowingBars.LOGGER.info(
+                    "Potion Core detected; took over its armor bar overlays (resistance, magic shielding) "
+                            + "and disabled Potion Core's own rendering to avoid double-drawing.");
+        } catch (IllegalAccessException e) {
+            OverflowingBars.LOGGER.warn(
+                    "Potion Core detected but its armor overlay toggle could not be disabled ({}); "
+                            + "its overlays may double-render over the armor bar.", e.toString());
+        }
+    }
 
     private static void resolve() {
         resolved = true;
-        potionCoreLoaded = Loader.isModLoaded(MOD_ID);
-        if (!potionCoreLoaded) return;
-
+        loaded = Loader.isModLoaded(MOD_ID);
+        if (!loaded) {
+            return;
+        }
         try {
-            Class<?> attrClass = Class.forName("com.tmtravlr.potioncore.PotionCoreAttributes");
-            damageResistance = (IAttribute) attrClass.getField("DAMAGE_RESISTANCE").get(null);
-            magicShielding   = (IAttribute) attrClass.getField("MAGIC_SHIELDING").get(null);
-            OverflowingBars.LOGGER.info(
-                    "Potion Core detected; enabling Damage Resistance + Magic Shielding overlay compat.");
-        } catch (Exception e) {
+            Class<?> attrs = Class.forName(ATTRIBUTES_CLASS);
+            damageResistance = (IAttribute) attrs.getField("DAMAGE_RESISTANCE").get(null);
+            magicShielding = (IAttribute) attrs.getField("MAGIC_SHIELDING").get(null);
+            renderArmorOverlay = Class.forName(CONFIG_CLASS).getField("renderArmorOverlay");
+        } catch (ReflectiveOperationException | ClassCastException e) {
+            damageResistance = null;
+            magicShielding = null;
+            renderArmorOverlay = null;
             OverflowingBars.LOGGER.warn(
-                    "Potion Core detected but its attributes could not be read ({}); "
-                            + "armor overlay compat disabled.",
-                    e.toString());
-            potionCoreLoaded = false;
+                    "Potion Core detected but its armor attributes could not be read ({}); "
+                            + "resistance/magic-shield overlays will not render.", e.toString());
         }
     }
 }

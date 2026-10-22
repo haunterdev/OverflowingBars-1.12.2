@@ -1,5 +1,6 @@
 package com.xy.overflowingbars.client.helper;
 
+import com.xy.overflowingbars.compat.PotionCoreCompat;
 import com.xy.overflowingbars.config.OverflowingBarsConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -35,7 +36,10 @@ public class ChatOffsetHelper {
     }
 
     public static boolean armorRow(EntityPlayer p) {
-        return p.getTotalArmorValue() > 0;
+        if (p.getTotalArmorValue() > 0) return true;
+        // When we own the armor element, a resistance/magic-shield overlay reserves the
+        // same row even with no armor underneath (Potion Core compat).
+        return OverflowingBarsConfig.armor.allowLayers && PotionCoreCompat.hasArmorOverlay(p);
     }
 
     public static boolean toughnessRow(EntityPlayer p) {

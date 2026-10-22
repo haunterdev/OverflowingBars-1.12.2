@@ -21,6 +21,7 @@ Requires 1.12.2, Forge 14.23.5.2860+, and [MixinBooter](https://www.curseforge.c
 - **AttributeFix**: works alongside it. Needed if you want armor/toughness to actually exceed the vanilla caps.
 - **Simple Difficulty / thirst HUDs**: the toughness bar sits above the hunger bar. Set `leftSide=true` in the `toughness` config to move it, or `armorToughnessBar=false` to hide it.
 - **Quantum Things / Random Things**: the lava charm bar renders correctly alongside the armor bar.
+- **Potion Core**: the Resistance outline and Magic Shielding overlay draw on the stacked armor bar.
 
 ## License
 

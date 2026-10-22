@@ -2,7 +2,6 @@ package com.xy.overflowingbars.client.handler;
 
 import com.xy.overflowingbars.client.helper.ChatOffsetHelper;
 import com.xy.overflowingbars.compat.PotionCoreCompat;
-import com.xy.overflowingbars.compat.PotionCoreOverlayRenderer;
 import com.xy.overflowingbars.compat.ScalingHealthCompat;
 import com.xy.overflowingbars.config.OverflowingBarsConfig;
 import net.minecraft.client.Minecraft;
@@ -47,44 +46,25 @@ public class GuiOverlayHandler {
             firePostOverlay(event, RenderGameOverlayEvent.ElementType.HEALTH);
         } else if (type == RenderGameOverlayEvent.ElementType.ARMOR && OverflowingBarsConfig.armor.allowLayers) {
             event.setCanceled(true);
-
-            int posX = res.getScaledWidth() / 2 - 91;
-            int posY = res.getScaledHeight() - GuiIngameForge.left_height;
-
-            // Damage Resistance red outline, drawn BEFORE the armor bar so
-            // the armor icons cover its centre, leaving only a 1-px border
-            // visible (the "outline" effect).  Only when Potion Core is loaded.
-            if (PotionCoreCompat.isLoaded()) {
-                PotionCoreOverlayRenderer.drawResistanceOverlay(posX, posY, mc);
-            }
-
-            // Overflowing Bars armor bar (on top of resistance outline)
+            // We now own the armor element; switch off Potion Core's overlapping overlay
+            // (once) and draw its resistance/magic-shield overlays ourselves, aligned to
+            // our bar. Only happens when allowLayers is on, otherwise Potion Core keeps
+            // rendering against the vanilla armor bar as normal.
+            PotionCoreCompat.disablePotionCoreArmorOverlay();
+            int armorPosX = res.getScaledWidth() / 2 - 91;
+            int armorPosY = res.getScaledHeight() - GuiIngameForge.left_height;
+            boolean armorRow = ChatOffsetHelper.armorRow(mc.player);
             GlStateManager.enableBlend();
             BarOverlayRenderer.renderArmorLevelBar(res.getScaledWidth(), res.getScaledHeight(), mc,
                     GuiIngameForge.left_height, OverflowingBarsConfig.armor.allowCount, false);
+            boolean potionCoreRow = PotionCoreArmorRenderer.render(armorPosX, armorPosY, mc, mc.player, !armorRow);
             GlStateManager.disableBlend();
-
-            // Magic Shielding glint, drawn AFTER the armor bar so it
-            // appears on top.  Only when Potion Core is loaded.
-            if (PotionCoreCompat.isLoaded()) {
-                PotionCoreOverlayRenderer.drawMagicShieldGlint(posX, posY, mc);
-            }
-
             mc.getTextureManager().bindTexture(BarOverlayRenderer.GUI_ICONS_LOCATION);
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-            if (ChatOffsetHelper.armorRow(mc.player)) {
+            if (armorRow || potionCoreRow) {
                 GuiIngameForge.left_height += 10;
             }
-
-            // When Potion Core is loaded, skip re-firing Post(ARMOR) so PC's
-            // own Post handler (which draws duplicate armour/toughness rows)
-            // does not run, Overflowing Bars already handles overflow and
-            // toughness, and we render magic-shield + resistance ourselves.
-            // Other Post(ARMOR) listeners (e.g. Quantum Things' Flamer Bar)
-            // lose the event in this narrow edge case.
-            if (!PotionCoreCompat.isLoaded()) {
-                firePostOverlay(event, RenderGameOverlayEvent.ElementType.ARMOR);
-            }
+            firePostOverlay(event, RenderGameOverlayEvent.ElementType.ARMOR);
         } else if (type == RenderGameOverlayEvent.ElementType.HEALTHMOUNT && OverflowingBarsConfig.mount.allowLayers) {
             // HEALTHMOUNT only fires when the player is riding a living mount, so a
             // mount is guaranteed here. Render one compact row and reserve its height.
