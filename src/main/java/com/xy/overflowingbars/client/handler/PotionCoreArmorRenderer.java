@@ -95,7 +95,7 @@ public final class PotionCoreArmorRenderer {
     }
 
     /**
-     * Ported verbatim from Potion Core's {@code drawEnchantmentGlint}: two scrolling,
+     * Potion Core's {@code drawEnchantmentGlint}: two scrolling,
      * rotated passes of the glint sheet through the texture matrix.
      */
     private static void drawEnchantmentGlint(double x, double y, double z, double width, double height) {
