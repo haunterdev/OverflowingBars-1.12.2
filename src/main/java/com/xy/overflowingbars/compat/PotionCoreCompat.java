@@ -20,10 +20,10 @@ import java.lang.reflect.Field;
  * land in the wrong spot.
  *
  * Potion Core exposes a single global toggle for all of this
- * ({@code ConfigLoader.renderArmorOverlay}) and no per-feature switch, so the clean
- * fix is to take ownership: disable Potion Core's armor overlay once at runtime, then
- * render only the two things we don't already draw (damage resistance and magic
- * shielding) aligned to our own armor bar (see {@code PotionCoreArmorRenderer}).
+ * ({@code ConfigLoader.renderArmorOverlay}) and no per-feature switch, so its armor overlay
+ * is switched off once at runtime, and the two things we don't already draw (damage
+ * resistance and magic shielding) are drawn aligned to our own armor bar (see
+ * {@code PotionCoreArmorRenderer}).
  */
 public final class PotionCoreCompat {
 
