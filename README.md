@@ -18,10 +18,12 @@ Requires 1.12.2, Forge 14.23.5.2860+, and [MixinBooter](https://www.curseforge.c
 ## Mod compatibility
 
 - **Scaling Health**: handled automatically. Defaults to letting Scaling Health draw the hearts; disable its `Custom Heart Rendering` to use these stacked hearts instead.
-- **AttributeFix**: works alongside it. Needed if you want armor/toughness to actually exceed the vanilla caps.
+- **AttributeFix**: works alongside it. Vanilla caps armor at 30 and toughness at 20 no matter what the gear adds, and the bars show the capped value because that is what reduces damage. AttributeFix raises the caps.
 - **Simple Difficulty / thirst HUDs**: the toughness bar sits above the hunger bar. Set `leftSide=true` in the `toughness` config to move it, or `armorToughnessBar=false` to hide it.
 - **Quantum Things / Random Things**: the lava charm bar renders correctly alongside the armor bar.
 - **Potion Core**: the Resistance outline and Magic Shielding overlay draw on the stacked armor bar.
+- **Farmer's Delight Legacy**: the Comfort sheen draws on the stacked hearts.
+- **Brewin' And Chewin' Legacy**: Tipsy hearts draw on the stacked hearts, including above 20 health.
 
 ## License
 

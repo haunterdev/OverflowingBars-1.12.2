@@ -23,6 +23,13 @@ public class HealthBarRenderer {
     private long lastHealthTime;
     private long healthBlinkTime;
 
+    // Where the last frame drew its health hearts (one layered row, columns 0..rowHearts-1, each
+    // y already bumped for low-health shake and regeneration), so other mods' heart overlays can
+    // be drawn on the same hearts. See HealthOverlayCompat.
+    private final int[] rowY = new int[10];
+    private int rowX;
+    private int rowHearts;
+
     public void onStartTick(Minecraft minecraft) {
         ++this.tickCount;
     }
@@ -76,6 +83,8 @@ public class HealthBarRenderer {
 
         boolean hardcore = player.world.getWorldInfo().isHardcoreModeEnabled();
         int normalHearts = Math.min(10, MathHelper.ceil((double) maxHealth / 2.0));
+        this.rowX = posX;
+        this.rowHearts = normalHearts;
         int maxAbsorptionHearts = 20 - normalHearts;
         int absorptionHearts = Math.min(20 - normalHearts, MathHelper.ceil((double) currentAbsorptionHealth / 2.0));
 
@@ -93,6 +102,10 @@ public class HealthBarRenderer {
 
             if (currentHeart < normalHearts && heartOffsetByRegen == currentHeart) {
                 currentPosY -= 2;
+            }
+
+            if (currentHeart < normalHearts) {
+                this.rowY[currentHeart] = currentPosY;
             }
 
             GlStateManager.pushMatrix();
@@ -136,6 +149,18 @@ public class HealthBarRenderer {
 
             GlStateManager.popMatrix();
         }
+    }
+
+    public int rowHearts() {
+        return this.rowHearts;
+    }
+
+    public int heartX(int column) {
+        return this.rowX + column * 8;
+    }
+
+    public int heartY(int column) {
+        return this.rowY[column];
     }
 
     private void renderHeart(HeartType heartType, int posX, int posY, boolean blink, boolean halfHeart, boolean hardcore) {

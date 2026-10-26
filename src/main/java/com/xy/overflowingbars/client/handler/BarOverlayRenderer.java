@@ -4,7 +4,6 @@ import com.xy.overflowingbars.config.OverflowingBarsConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
@@ -46,7 +45,7 @@ public class BarOverlayRenderer {
         ArmorBarRenderer.renderArmorBar(posX, posY, player, unmodified);
 
         if (rowCount && !unmodified) {
-            RowCountRenderer.drawBarRowCount(posX - 2, posY, player.getTotalArmorValue(), true, mc.fontRenderer);
+            RowCountRenderer.drawBarRowCount(posX - 2, posY, ArmorBarRenderer.armorPoints(player), true, mc.fontRenderer);
         }
     }
 
@@ -61,9 +60,8 @@ public class BarOverlayRenderer {
         ArmorBarRenderer.renderToughnessBar(posX, posY, player, left, unmodified);
 
         if (rowCount && !unmodified) {
-            int toughnessValue = MathHelper.floor(
-                    player.getEntityAttribute(SharedMonsterAttributes.ARMOR_TOUGHNESS).getAttributeValue());
-            RowCountRenderer.drawBarRowCount(posX + (left ? -2 : 2), posY, toughnessValue, left, mc.fontRenderer);
+            RowCountRenderer.drawBarRowCount(posX + (left ? -2 : 2), posY,
+                    ArmorBarRenderer.toughnessPoints(player), left, mc.fontRenderer);
         }
     }
 

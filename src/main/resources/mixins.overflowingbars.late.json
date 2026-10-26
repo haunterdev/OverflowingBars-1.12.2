@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.7.11",
+  "package": "com.xy.overflowingbars.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "mixins.overflowingbars.refmap.json",
+  "mixins": [],
+  "client": [
+    "compat.MixinBNCClientEffectEvents",
+    "compat.MixinComfortHealthOverlay"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

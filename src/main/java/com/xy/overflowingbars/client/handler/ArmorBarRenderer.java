@@ -10,19 +10,26 @@ import net.minecraft.util.math.MathHelper;
 
 public class ArmorBarRenderer {
 
-    public static void renderArmorBar(int posX, int posY, EntityPlayer player, boolean unmodified) {
-        OverflowingBarsConfig.ArmorRowConfig config = OverflowingBarsConfig.armor;
-        int armorPoints = OverflowingBarsConfig.debugArmorPoints > 0
+    // The bar, its row count and the reserved row all read these, so a debug value drives all three.
+    // Vanilla clamps generic.armor to 30 and generic.armorToughness to 20; a mod that raises those
+    // caps raises what shows here, since this is the value damage is reduced by.
+    public static int armorPoints(EntityPlayer player) {
+        return OverflowingBarsConfig.debugArmorPoints > 0
                 ? OverflowingBarsConfig.debugArmorPoints : player.getTotalArmorValue();
-        renderArmorBar(posX, posY, 18, armorPoints, true, unmodified, config);
+    }
+
+    public static int toughnessPoints(EntityPlayer player) {
+        return OverflowingBarsConfig.debugToughnessPoints > 0
+                ? OverflowingBarsConfig.debugToughnessPoints
+                : MathHelper.floor(player.getEntityAttribute(SharedMonsterAttributes.ARMOR_TOUGHNESS).getAttributeValue());
+    }
+
+    public static void renderArmorBar(int posX, int posY, EntityPlayer player, boolean unmodified) {
+        renderArmorBar(posX, posY, 18, armorPoints(player), true, unmodified, OverflowingBarsConfig.armor);
     }
 
     public static void renderToughnessBar(int posX, int posY, EntityPlayer player, boolean left, boolean unmodified) {
-        OverflowingBarsConfig.ArmorRowConfig config = OverflowingBarsConfig.toughness;
-        int armorPoints = OverflowingBarsConfig.debugToughnessPoints > 0
-                ? OverflowingBarsConfig.debugToughnessPoints
-                : MathHelper.floor(player.getEntityAttribute(SharedMonsterAttributes.ARMOR_TOUGHNESS).getAttributeValue());
-        renderArmorBar(posX, posY, left ? 9 : 0, armorPoints, left, unmodified, config);
+        renderArmorBar(posX, posY, left ? 9 : 0, toughnessPoints(player), left, unmodified, OverflowingBarsConfig.toughness);
     }
 
     public static void renderArmorBar(int posX, int posY, int vOffset, int armorPoints, boolean left,

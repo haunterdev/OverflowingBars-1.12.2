@@ -1,6 +1,7 @@
 package com.xy.overflowingbars.client.handler;
 
 import com.xy.overflowingbars.client.helper.ChatOffsetHelper;
+import com.xy.overflowingbars.compat.HealthOverlayCompat;
 import com.xy.overflowingbars.compat.PotionCoreCompat;
 import com.xy.overflowingbars.compat.ScalingHealthCompat;
 import com.xy.overflowingbars.config.OverflowingBarsConfig;
@@ -43,7 +44,14 @@ public class GuiOverlayHandler {
             mc.getTextureManager().bindTexture(BarOverlayRenderer.GUI_ICONS_LOCATION);
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
             GuiIngameForge.left_height += ChatOffsetHelper.twoHealthRows(mc.player) ? 20 : 10;
-            firePostOverlay(event, RenderGameOverlayEvent.ElementType.HEALTH);
+            // Heart overlays from Farmer's Delight Legacy and Brewin' And Chewin' Legacy listen on
+            // this Post; while it runs they draw on our row (HealthOverlayCompat).
+            HealthOverlayCompat.setOwnsHealthRow(true);
+            try {
+                firePostOverlay(event, RenderGameOverlayEvent.ElementType.HEALTH);
+            } finally {
+                HealthOverlayCompat.setOwnsHealthRow(false);
+            }
         } else if (type == RenderGameOverlayEvent.ElementType.ARMOR && OverflowingBarsConfig.armor.allowLayers) {
             event.setCanceled(true);
             // We now own the armor element; switch off Potion Core's overlapping overlay
